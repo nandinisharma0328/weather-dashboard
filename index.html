@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Weather Dashboard</h1>
+      </header>
+
+      <section class="search-section">
+        <input
+          type="text"
+          id="city-input"
+          placeholder="Search for a city..."
+          autocomplete="off"
+        />
+        <button id="search-btn">Search</button>
+        <button id="fav-btn">⭐ Favorite</button>
+        <div id="favorites-list" class="favorites-container"></div>
+      </section>
+
+      <main class="dashboard">
+        <div class="card current-weather">
+          <h2>Current Weather in <span id="location-name">---</span></h2>
+          <div class="weather-info">
+            <span id="weather-icon">☀️</span>
+            <span id="current-temp">--°C</span>
+          </div>
+          <p id="weather-desc">Condition: --</p>
+          <p>Wind Speed: <span id="wind-speed">--</span> km/h</p>
+        </div>
+
+        <div class="bottom-cards-row">
+          <div class="card chart-container">
+            <h3>7-Day Temp Trend</h3>
+            <canvas id="tempChart"></canvas>
+          </div>
+
+          <div class="card forecast-section">
+            <h3>7-Day Forecast</h3>
+            <div id="forecast-grid" class="forecast-grid"></div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

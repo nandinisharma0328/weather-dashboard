@@ -1,0 +1,125 @@
+import React, { useState, useEffect } from 'react';
+import './App.css';
+
+function App() {
+  const [city, setCity] = useState('');
+  const [weather, setWeather] = useState(null);
+  const [forecast, setForecast] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  // Replace this with your actual OpenWeatherMap API Key
+  const API_KEY = "YOUR_OPENWEATHERMAP_API_KEY"; 
+
+  const fetchWeather = async (searchCity) => {
+    if (!searchCity.trim()) return;
+    setLoading(true);
+    setError('');
+    
+    try {
+      // 1. Fetch Current Weather
+      const currentRes = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?q=${searchCity}&units=metric&appid=${API_KEY}`
+      );
+      if (!currentRes.ok) throw new Error("City not found. Please try again.");
+      const currentData = await currentRes.json();
+      setWeather(currentData);
+
+      // 2. Fetch 5-Day Forecast
+      const forecastRes = await fetch(
+        `https://api.openweathermap.org/data/2.5/forecast?q=${searchCity}&units=metric&appid=${API_KEY}`
+      );
+      const forecastData = await forecastRes.json();
+      
+      // Filter the 3-hour forecasts to get one reading per day (e.g., at 12:00 PM)
+      const dailyData = forecastData.list.filter((item) =>
+        item.dt_txt.includes("12:00:00")
+      );
+      setForecast(dailyData);
+    } catch (err) {
+      setError(err.message);
+      setWeather(null);
+      setForecast([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    fetchWeather(city);
+  };
+
+  return (
+    <div className="app-container">
+      <header className="app-header">
+        <h1>Weather Dashboard</h1>
+        <form onSubmit={handleSearchSubmit} className="search-form">
+          <input
+            type="text"
+            placeholder="Enter city name... (e.g., London)"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+          />
+          <button type="submit">Search</button>
+        </form>
+      </header>
+
+      <main className="app-content">
+        {loading && <div className="loader">Fetching weather data...</div>}
+        {error && <div className="error-message">{error}</div>}
+
+        {/* Current Weather Display */}
+        {weather && (
+          <section className="current-weather-card">
+            <h2>{weather.name}, {weather.sys.country}</h2>
+            <div className="weather-main">
+              <img 
+                src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`} 
+                alt={weather.weather[0].description} 
+              />
+              <span className="temp">{Math.round(weather.main.temp)}°C</span>
+            </div>
+            <p className="description">{weather.weather[0].description}</p>
+            <div className="details-grid">
+              <div className="detail-item">
+                <span className="label">Humidity:</span>
+                <span className="value">{weather.main.humidity}%</span>
+              </div>
+              <div className="detail-item">
+                <span className="label">Wind Speed:</span>
+                <span className="value">{weather.wind.speed} m/s</span>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* 5-Day Forecast Display */}
+        {forecast.length > 0 && (
+          <section className="forecast-section">
+            <h3>5-Day Forecast</h3>
+            <div className="forecast-grid">
+              {forecast.map((day) => {
+                const dateObj = new Date(day.dt * 1000);
+                const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+                return (
+                  <div key={day.dt} className="forecast-card">
+                    <h4>{dayName}</h4>
+                    <img 
+                      src={`https://openweathermap.org/img/wn/${day.weather[0].icon}.png`} 
+                      alt={day.weather[0].description} 
+                    />
+                    <p className="forecast-temp">{Math.round(day.main.temp)}°C</p>
+                    <p className="forecast-desc">{day.weather[0].main}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+      </main>
+    </div>
+  );
+}
+
+export default App;
